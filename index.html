@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dumbbell & Barbell Plate Load Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <span class="text-5xl" aria-hidden="true">🏋️</span>
+      <h1 class="text-3xl font-bold text-white mt-2">Plate Load Calculator</h1>
+      <p class="text-gray-400 text-sm mt-1">Barbell & Dumbbell · 1RM Estimator · Warmup Planner</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6" role="tablist" aria-label="Calculator sections">
+      <button role="tab" id="tab-plate" aria-controls="panel-plate" aria-selected="true"
+        class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-orange-500 text-white transition-colors">
+        Plate Calculator
+      </button>
+      <button role="tab" id="tab-1rm" aria-controls="panel-1rm" aria-selected="false"
+        class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
+        1RM Estimator
+      </button>
+      <button role="tab" id="tab-warmup" aria-controls="panel-warmup" aria-selected="false"
+        class="tab-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors">
+        Warmup Planner
+      </button>
+    </div>
+
+    <!-- Panel: Plate Calculator -->
+    <div id="panel-plate" role="tabpanel" aria-labelledby="tab-plate">
+      <div class="bg-gray-800 rounded-2xl p-6 mb-4">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="target-weight" class="block text-sm font-medium text-gray-300 mb-1">Target Total Weight</label>
+            <div class="relative">
+              <input id="target-weight" type="number" min="0" step="2.5" value="100"
+                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                aria-label="Target total weight" />
+              <span class="absolute right-3 top-2 text-gray-400 text-sm" id="weight-unit-label">kg</span>
+            </div>
+          </div>
+          <div>
+            <label for="bar-weight" class="block text-sm font-medium text-gray-300 mb-1">Bar Weight</label>
+            <input id="bar-weight" type="number" min="0" step="0.5" value="20"
+              class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              aria-label="Bar weight" />
+          </div>
+        </div>
+
+        <div class="flex gap-4 mb-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="unit" value="kg" checked class="accent-orange-500" aria-label="Kilograms" />
+            <span class="text-sm text-gray-300">kg</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="unit" value="lb" class="accent-orange-500" aria-label="Pounds" />
+            <span class="text-sm text-gray-300">lb</span>
+          </label>
+        </div>
+
+        <div class="mb-4">
+          <p class="text-sm font-medium text-gray-300 mb-2">Available Plate Sizes (per side)</p>
+          <div id="plate-checkboxes" class="flex flex-wrap gap-2" role="group" aria-label="Available plate sizes"></div>
+        </div>
+
+        <button id="calc-plates-btn"
+          class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+          aria-label="Calculate plate combination">
+          Calculate Plates
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div id="plate-result" class="hidden bg-gray-800 rounded-2xl p-6">
+        <h2 class="text-base font-bold text-orange-400 mb-4">Plate Setup</h2>
+        <div id="bar-visual" class="mb-4 overflow-x-auto"></div>
+        <div id="plate-breakdown" class="space-y-1"></div>
+      </div>
+    </div>
+
+    <!-- Panel: 1RM Estimator -->
+    <div id="panel-1rm" role="tabpanel" aria-labelledby="tab-1rm" class="hidden">
+      <div class="bg-gray-800 rounded-2xl p-6 mb-4">
+        <h2 class="text-base font-semibold text-gray-200 mb-4">1-Rep Max Estimator</h2>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="rm-weight" class="block text-sm font-medium text-gray-300 mb-1">Weight Lifted</label>
+            <input id="rm-weight" type="number" min="1" step="2.5" placeholder="80"
+              class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Weight used for set" />
+          </div>
+          <div>
+            <label for="rm-reps" class="block text-sm font-medium text-gray-300 mb-1">Reps Completed</label>
+            <input id="rm-reps" type="number" min="1" max="30" step="1" placeholder="5"
+              class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Number of reps completed" />
+          </div>
+        </div>
+        <button id="calc-1rm-btn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+          aria-label="Calculate one rep max">
+          Estimate 1RM
+        </button>
+      </div>
+      <div id="rm-result" class="hidden bg-gray-800 rounded-2xl p-6">
+        <h2 class="text-base font-bold text-blue-400 mb-3">Estimated 1RM</h2>
+        <div id="rm-value" class="text-4xl font-black text-white mb-4"></div>
+        <div id="rm-percentages" class="space-y-2"></div>
+        <p class="text-xs text-gray-500 mt-4">Formula: Epley (Weight × (1 + Reps/30)). Results are estimates — individual variation applies.</p>
+      </div>
+    </div>
+
+    <!-- Panel: Warmup Planner -->
+    <div id="panel-warmup" role="tabpanel" aria-labelledby="tab-warmup" class="hidden">
+      <div class="bg-gray-800 rounded-2xl p-6 mb-4">
+        <h2 class="text-base font-semibold text-gray-200 mb-4">Warmup Progression Planner</h2>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="wu-target" class="block text-sm font-medium text-gray-300 mb-1">Working Weight</label>
+            <input id="wu-target" type="number" min="1" step="2.5" placeholder="100"
+              class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              aria-label="Target working weight for warmup planning" />
+          </div>
+          <div>
+            <label for="wu-bar" class="block text-sm font-medium text-gray-300 mb-1">Bar Weight</label>
+            <input id="wu-bar" type="number" min="0" step="0.5" placeholder="20"
+              class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              aria-label="Bar weight for warmup planning" />
+          </div>
+        </div>
+        <button id="calc-warmup-btn"
+          class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors text-sm"
+          aria-label="Generate warmup progression">
+          Generate Warmup
+        </button>
+      </div>
+      <div id="warmup-result" class="hidden bg-gray-800 rounded-2xl p-6">
+        <h2 class="text-base font-bold text-green-400 mb-4">Warmup Sets</h2>
+        <div id="warmup-sets" class="space-y-2"></div>
+        <p class="text-xs text-gray-500 mt-4">Standard progression: bar-only → 40% → 60% → 75% → 90% → work sets. Adjust as needed.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Available plates per unit
+const PLATES_KG = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25];
+const PLATES_LB = [45, 35, 25, 10, 5, 2.5, 1.25];
+
+let currentUnit = 'kg';
+let availablePlates = new Set([25, 20, 15, 10, 5, 2.5, 1.25]);
+
+function renderPlateCheckboxes() {
+  const container = document.getElementById('plate-checkboxes');
+  container.innerHTML = '';
+  const plates = currentUnit === 'kg' ? PLATES_KG : PLATES_LB;
+  plates.forEach(p => {
+    const checked = availablePlates.has(p);
+    const label = document.createElement('label');
+    label.className = 'flex items-center gap-1.5 cursor-pointer';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = p;
+    cb.checked = checked;
+    cb.className = 'accent-orange-500 w-4 h-4';
+    cb.setAttribute('aria-label', p + ' ' + currentUnit + ' plate');
+    cb.addEventListener('change', () => {
+      if (cb.checked) availablePlates.add(p);
+      else availablePlates.delete(p);
+    });
+    const span = document.createElement('span');
+    span.className = 'text-sm text-gray-300';
+    span.textContent = p + currentUnit;
+    label.appendChild(cb);
+    label.appendChild(span);
+    container.appendChild(label);
+  });
+}
+
+function calcPlates(targetTotal, barWeight, available) {
+  const perSide = (targetTotal - barWeight) / 2;
+  if (perSide < 0) return null;
+  const sortedPlates = [...available].sort((a,b) => b - a);
+  const used = [];
+  let remaining = perSide;
+  for (const plate of sortedPlates) {
+    while (remaining >= plate - 0.001) {
+      used.push(plate);
+      remaining -= plate;
+      remaining = Math.round(remaining * 1000) / 1000;
+    }
+  }
+  if (remaining > 0.05) return null; // can't make exact weight
+  return { perSide, used };
+}
+
+function renderBarVisual(used) {
+  const container = document.getElementById('bar-visual');
+  const colors = ['bg-orange-500','bg-yellow-500','bg-green-500','bg-blue-500','bg-purple-500','bg-pink-500','bg-red-500','bg-teal-500'];
+  const colorMap = {};
+  let ci = 0;
+  [...new Set(used)].forEach(p => { colorMap[p] = colors[ci++ % colors.length]; });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'flex items-center justify-center gap-1 py-2';
+  wrap.setAttribute('aria-label','Bar with plates loaded');
+
+  // Left plates (reversed)
+  [...used].reverse().forEach(p => {
+    const el = document.createElement('div');
+    el.className = colorMap[p] + ' rounded text-xs font-bold text-white flex items-center justify-center';
+    const h = Math.min(20 + p * 1.2, 64);
+    el.style.width = '24px';
+    el.style.height = h + 'px';
+    el.textContent = p;
+    wrap.appendChild(el);
+  });
+
+  // Bar
+  const bar = document.createElement('div');
+  bar.className = 'bg-gray-400 rounded flex-shrink-0';
+  bar.style.width = '60px';
+  bar.style.height = '10px';
+  wrap.appendChild(bar);
+
+  // Right plates
+  used.forEach(p => {
+    const el = document.createElement('div');
+    el.className = colorMap[p] + ' rounded text-xs font-bold text-white flex items-center justify-center';
+    const h = Math.min(20 + p * 1.2, 64);
+    el.style.width = '24px';
+    el.style.height = h + 'px';
+    el.textContent = p;
+    wrap.appendChild(el);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(wrap);
+}
+
+document.getElementById('calc-plates-btn').addEventListener('click', () => {
+  const target = parseFloat(document.getElementById('target-weight').value);
+  const bar = parseFloat(document.getElementById('bar-weight').value) || 0;
+  if (isNaN(target) || target < 0) { alert('Enter a valid target weight.'); return; }
+
+  const result = calcPlates(target, bar, availablePlates);
+  const resultDiv = document.getElementById('plate-result');
+  const breakdown = document.getElementById('plate-breakdown');
+  breakdown.innerHTML = '';
+  resultDiv.classList.remove('hidden');
+
+  if (!result) {
+    const err = document.createElement('p');
+    err.className = 'text-red-400 text-sm';
+    err.textContent = 'Cannot make exact weight with available plates. Try adding more plate sizes or adjusting target.';
+    breakdown.appendChild(err);
+    document.getElementById('bar-visual').innerHTML = '';
+    return;
+  }
+
+  renderBarVisual(result.used);
+
+  const summary = document.createElement('p');
+  summary.className = 'text-sm text-gray-300 mb-2';
+  summary.textContent = 'Weight per side: ' + result.perSide + ' ' + currentUnit + ' | Total: ' + target + ' ' + currentUnit + ' (including ' + bar + ' ' + currentUnit + ' bar)';
+  breakdown.appendChild(summary);
+
+  const counts = {};
+  result.used.forEach(p => counts[p] = (counts[p]||0) + 1);
+  Object.entries(counts).sort((a,b) => parseFloat(b[0])-parseFloat(a[0])).forEach(([plate, count]) => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-3 bg-gray-700 rounded-lg px-4 py-2';
+    const plateEl = document.createElement('span');
+    plateEl.className = 'font-mono font-bold text-orange-400 w-16';
+    plateEl.textContent = plate + ' ' + currentUnit;
+    const countEl = document.createElement('span');
+    countEl.className = 'text-gray-300 text-sm';
+    countEl.textContent = '× ' + count + ' per side (' + (count*2) + ' total)';
+    row.appendChild(plateEl);
+    row.appendChild(countEl);
+    breakdown.appendChild(row);
+  });
+});
+
+// 1RM
+document.getElementById('calc-1rm-btn').addEventListener('click', () => {
+  const w = parseFloat(document.getElementById('rm-weight').value);
+  const r = parseInt(document.getElementById('rm-reps').value);
+  if (isNaN(w) || isNaN(r) || r < 1) { alert('Enter valid weight and reps.'); return; }
+  const oneRM = Math.round(w * (1 + r / 30));
+  const resultDiv = document.getElementById('rm-result');
+  document.getElementById('rm-value').textContent = oneRM + ' ' + currentUnit;
+  const pcts = document.getElementById('rm-percentages');
+  pcts.innerHTML = '';
+  [100,95,90,85,80,75,70,65,60].forEach(pct => {
+    const row = document.createElement('div');
+    row.className = 'flex justify-between items-center bg-gray-700 rounded-lg px-4 py-2';
+    const label = document.createElement('span');
+    label.className = 'text-sm text-gray-300';
+    label.textContent = pct + '%';
+    const val = document.createElement('span');
+    val.className = 'font-mono font-bold text-blue-300';
+    val.textContent = Math.round(oneRM * pct / 100) + ' ' + currentUnit;
+    row.appendChild(label);
+    row.appendChild(val);
+    pcts.appendChild(row);
+  });
+  resultDiv.classList.remove('hidden');
+});
+
+// Warmup
+document.getElementById('calc-warmup-btn').addEventListener('click', () => {
+  const target = parseFloat(document.getElementById('wu-target').value);
+  const bar = parseFloat(document.getElementById('wu-bar').value) || 20;
+  if (isNaN(target) || target <= 0) { alert('Enter a valid working weight.'); return; }
+
+  const sets = [
+    { label:'Bar Only',  pct:0,   reps:10, desc:'Movement prep' },
+    { label:'40%',       pct:0.40, reps:8,  desc:'Activation' },
+    { label:'60%',       pct:0.60, reps:5,  desc:'Building up' },
+    { label:'75%',       pct:0.75, reps:3,  desc:'Near working weight' },
+    { label:'90%',       pct:0.90, reps:1,  desc:'Primer set' },
+    { label:'Work Set',  pct:1.0,  reps:null, desc:'Full working sets' },
+  ];
+
+  const container = document.getElementById('warmup-sets');
+  container.innerHTML = '';
+  sets.forEach((s, i) => {
+    const weight = s.pct === 0 ? bar : Math.round((bar + (target - bar) * s.pct) / 2.5) * 2.5;
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-4 bg-gray-700 rounded-xl px-4 py-3';
+    const num = document.createElement('span');
+    num.className = 'text-xs font-bold text-gray-500 w-4';
+    num.textContent = (i+1);
+    const info = document.createElement('div');
+    info.className = 'flex-1';
+    const top = document.createElement('div');
+    top.className = 'flex items-center gap-2';
+    const lbl = document.createElement('span');
+    lbl.className = 'text-sm font-semibold text-gray-200';
+    lbl.textContent = s.label;
+    const desc = document.createElement('span');
+    desc.className = 'text-xs text-gray-500';
+    desc.textContent = s.desc;
+    top.appendChild(lbl);
+    top.appendChild(desc);
+    info.appendChild(top);
+    row.appendChild(num);
+    row.appendChild(info);
+
+    const wEl = document.createElement('span');
+    wEl.className = 'font-mono font-bold text-green-400 text-sm';
+    wEl.textContent = weight + ' ' + currentUnit;
+    const rEl = document.createElement('span');
+    rEl.className = 'text-xs text-gray-400 w-12 text-right';
+    rEl.textContent = s.reps ? s.reps + ' reps' : '3–5×';
+    row.appendChild(wEl);
+    row.appendChild(rEl);
+    container.appendChild(row);
+  });
+  document.getElementById('warmup-result').classList.remove('hidden');
+});
+
+// Unit change
+document.querySelectorAll('input[name="unit"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    currentUnit = radio.value;
+    availablePlates = new Set(currentUnit === 'kg' ? [25, 20, 15, 10, 5, 2.5, 1.25] : [45, 25, 10, 5, 2.5]);
+    document.getElementById('bar-weight').value = currentUnit === 'kg' ? 20 : 45;
+    document.getElementById('weight-unit-label').textContent = currentUnit;
+    renderPlateCheckboxes();
+  });
+});
+
+// Tab switching
+document.querySelectorAll('[role="tab"]').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('[role="tab"]').forEach(t => {
+      t.setAttribute('aria-selected','false');
+      t.className = 'tab-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors';
+    });
+    document.querySelectorAll('[role="tabpanel"]').forEach(p => p.classList.add('hidden'));
+    tab.setAttribute('aria-selected','true');
+    const activeColor = tab.id === 'tab-plate' ? 'bg-orange-500' : tab.id === 'tab-1rm' ? 'bg-blue-600' : 'bg-green-600';
+    tab.className = 'tab-btn flex-1 py-2 rounded-lg text-sm font-semibold ' + activeColor + ' text-white transition-colors';
+    document.getElementById(tab.getAttribute('aria-controls')).classList.remove('hidden');
+  });
+});
+
+// Persist user settings
+function saveSettings() {
+  try {
+    localStorage.setItem('plateCalc_v1', JSON.stringify({
+      unit: currentUnit,
+      available: [...availablePlates],
+      targetWeight: document.getElementById('target-weight').value,
+      barWeight: document.getElementById('bar-weight').value,
+    }));
+  } catch(e) {}
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('plateCalc_v1');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.unit) {
+      currentUnit = d.unit;
+      document.querySelector('input[name="unit"][value="' + currentUnit + '"]').checked = true;
+      document.getElementById('weight-unit-label').textContent = currentUnit;
+    }
+    if (Array.isArray(d.available)) availablePlates = new Set(d.available);
+    if (d.targetWeight) document.getElementById('target-weight').value = d.targetWeight;
+    if (d.barWeight) document.getElementById('bar-weight').value = d.barWeight;
+  } catch(e) {}
+}
+
+// Save settings on any relevant input change
+document.getElementById('target-weight').addEventListener('change', saveSettings);
+document.getElementById('bar-weight').addEventListener('change', saveSettings);
+
+// Init
+loadSettings();
+renderPlateCheckboxes();
+</script>
+</body>
+</html>
